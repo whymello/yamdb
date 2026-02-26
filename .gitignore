@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Environments
+.env
+.venv
+
+# VSCode Settings
+.vscode
+
+# Django stuff:
+db.sqlite3
+
+# Development documentation
+/static/redoc.yaml
+/templates/redoc.html
+ТЗ_Проект_YaMDb.md

@@ -1,0 +1,19 @@
+[project]
+name = "yamdb-api"
+version = "0.1.0"
+description = "Веб ресурс для сбора отзывов пользователей на произведения"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.0.2",
+    "djangorestframework>=3.16.1",
+    "python-dotenv>=1.2.1",
+]
+
+[tool.ruff]
+ignore = [
+  # "D212",  # * multi-line-summary-first-line
+]
+
+# [tool.ruff.isort]
+# known-first-party = ["yamdb_api"]
