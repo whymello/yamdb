@@ -11,7 +11,11 @@ Django-проект для разработки REST API сервиса публ
 
 * создано виртуальное окружение через `uv`
 * создан Django-проект
-* базовая структура проекта без приложений
+* добавлены приложения:
+  * `api` — слой будущего REST API
+  * `reviews` — доменная логика отзывов и связанных сущностей
+
+Бизнес-логика и модели находятся в разработке.
 
 ## 🛠 Технологический стек (на текущий момент)
 
@@ -33,6 +37,25 @@ yamdb_api/
 ├── README.md
 ├── requirements.txt
 ├── uv.lock
+├── api/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   ├── views.py
+│   └── migrations/
+│       └── __init__.py
+├── reviews/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── views.py
+│   └── migrations/
+│       └── __init__.py
 └── yamdb/
     ├── __init__.py
     ├── asgi.py

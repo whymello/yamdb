@@ -11,9 +11,51 @@ dependencies = [
 ]
 
 [tool.ruff]
-ignore = [
-  # "D212",  # * multi-line-summary-first-line
+line-length = 100
+indent-width = 4
+target-version = "py314"
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+  ".bzr", ".direnv", ".eggs", ".git", ".git-rewrite", ".hg", ".ipynb_checkpoints", ".mypy_cache", ".nox",
+  ".pants.d", ".pyenv", ".pytest_cache", ".pytype", ".ruff_cache", ".svn", ".tox", ".venv", ".vscode",
+  "__pypackages__", "_build", "buck-out", "build", "dist", "node_modules", "site-packages", "venv",
 ]
 
 # [tool.ruff.isort]
 # known-first-party = ["yamdb_api"]
+
+[tool.ruff.lint]
+select = [
+  "E", "W",  # * pycodestyle
+  "F",  # * Pyflakes
+  "PL",  # * Pylint
+  "UP",  # * pyupgrade
+  "B",  # * flake8-bugbear
+  "SIM",  # * flake8-simplify
+  "I",  # * isort
+  "FAST",  # * FastAPI
+  "NPY",  # * NumPy-specific rules
+  "PD",  # * pandas-vet
+  "N",  # * pep8-naming
+  "DOC",  # * pydoclint
+  "D",  # * pydocstyle
+]
+ignore = [
+  "D212",  # * multi-line-summary-first-line
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
