@@ -1,12 +1,15 @@
 [project]
 name = "yamdb-api"
-version = "0.1.0"
+version = "0.2.0"
 description = "Веб ресурс для сбора отзывов пользователей на произведения"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "django>=6.0.2",
+    "django-filter>=25.2",
     "djangorestframework>=3.16.1",
+    "djangorestframework-simplejwt>=5.5.1",
+    "drf-nested-routers>=0.95.0",
     "python-dotenv>=1.2.1",
 ]
 
@@ -19,7 +22,7 @@ target-version = "py314"
 exclude = [
   ".bzr", ".direnv", ".eggs", ".git", ".git-rewrite", ".hg", ".ipynb_checkpoints", ".mypy_cache", ".nox",
   ".pants.d", ".pyenv", ".pytest_cache", ".pytype", ".ruff_cache", ".svn", ".tox", ".venv", ".vscode",
-  "__pypackages__", "_build", "buck-out", "build", "dist", "node_modules", "site-packages", "venv",
+  "__pypackages__", "_build", "buck-out", "build", "dist", "node_modules", "site-packages", "venv", "migrations"
 ]
 
 # [tool.ruff.isort]
@@ -43,6 +46,7 @@ select = [
 ]
 ignore = [
   "D212",  # * multi-line-summary-first-line
+  "D1",  # * undocumented-public-...
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

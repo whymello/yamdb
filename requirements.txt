@@ -4,10 +4,24 @@ asgiref==3.11.1
     # via django
 django==6.0.2
     # via
+    #   django-filter
     #   djangorestframework
+    #   djangorestframework-simplejwt
+    #   drf-nested-routers
     #   yamdb-api
-djangorestframework==3.16.1
+django-filter==25.2
     # via yamdb-api
+djangorestframework==3.16.1
+    # via
+    #   djangorestframework-simplejwt
+    #   drf-nested-routers
+    #   yamdb-api
+djangorestframework-simplejwt==5.5.1
+    # via yamdb-api
+drf-nested-routers==0.95.0
+    # via yamdb-api
+pyjwt==2.11.0
+    # via djangorestframework-simplejwt
 python-dotenv==1.2.1
     # via yamdb-api
 sqlparse==0.5.5
