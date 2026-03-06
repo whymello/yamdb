@@ -1,8 +1,12 @@
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 from rest_framework import serializers, status
 from rest_framework_simplejwt.tokens import AccessToken
 
+from reviews.models import Category, Genre, Title
 from users import models
 
 User = get_user_model()
@@ -79,6 +83,60 @@ class TokenSerializer(serializers.Serializer):
         token = AccessToken.for_user(user=user)
 
         return {"token": str(token)}
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ("name", "slug")
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ("name", "slug")
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField(read_only=True)
+    genre = serializers.SlugRelatedField(
+        many=True, slug_field="slug", queryset=Genre.objects.all(), write_only=True
+    )
+    category = serializers.SlugRelatedField(
+        slug_field="slug", queryset=Category.objects.all(), write_only=True
+    )
+    genre_details = GenreSerializer(source="genre", many=True, read_only=True)
+    category_details = CategorySerializer(source="category", read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            "id",
+            "name",
+            "year",
+            "rating",
+            "description",
+            "genre",
+            "genre_details",
+            "category_details",
+            "category",
+        )
+        read_only_fields = ("id",)
+
+    def get_rating(self, obj: Title) -> None | int:
+        reviews = obj.reviews.all()
+        avg_score = reviews.aggregate(Avg("score"))["score__avg"]
+        if avg_score is None:
+            return avg_score
+        return int(avg_score)
+
+    def validate_year(self, value: int) -> int:
+        if value > date.today().year:
+            raise serializers.ValidationError(
+                detail="Нельзя добавлять произведения, которые еще не вышли.",
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        return value
 
 
 class UserSerializer(serializers.ModelSerializer):

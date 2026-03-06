@@ -1,6 +1,6 @@
 [project]
 name = "yamdb-api"
-version = "0.2.0"
+version = "0.3.0"
 description = "Веб ресурс для сбора отзывов пользователей на произведения"
 readme = "README.md"
 requires-python = ">=3.14"
