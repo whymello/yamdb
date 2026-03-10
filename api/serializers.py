@@ -6,7 +6,7 @@ from django.db.models import Avg
 from rest_framework import serializers, status
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Comment, Genre, Review, Title
 from users import models
 
 User = get_user_model()
@@ -137,6 +137,47 @@ class TitleSerializer(serializers.ModelSerializer):
                 code=status.HTTP_400_BAD_REQUEST,
             )
         return value
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    MIN_VALUE, MAX_VALUE = 1, 10
+
+    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+
+    class Meta:
+        model = Review
+        fields = ("id", "text", "author", "score", "pub_date")
+        read_only_fields = ("id", "pub_date")
+
+    def validate_score(self, value: int) -> int:
+
+        if value < self.MIN_VALUE or value > self.MAX_VALUE:
+            raise serializers.ValidationError(
+                detail="Оценка произведения должна быть в пределах [1..10].",
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        return value
+
+    def validate(self, attrs: dict[str, str | int]) -> dict[str, str | int]:
+        author = self.context["request"].user
+        title_id = self.context["title_id"]
+
+        if self.instance is None and Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError(
+                detail="Вы уже оставляли отзыв на это произведение.",
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return attrs
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+
+    class Meta:
+        model = Comment
+        fields = ("id", "text", "author", "pub_date")
+        read_only_fields = ("id", "pub_date")
 
 
 class UserSerializer(serializers.ModelSerializer):

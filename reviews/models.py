@@ -30,3 +30,10 @@ class Review(models.Model):
     score = models.PositiveSmallIntegerField(verbose_name="Оценка")
     pub_date = models.DateTimeField(verbose_name="Дата публикации отзыва", auto_now_add=True)
     title = models.ForeignKey(to=Title, on_delete=models.CASCADE, related_name="reviews")
+
+
+class Comment(models.Model):
+    text = models.TextField(verbose_name="Текст комментария")
+    author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="comments")
+    pub_date = models.DateTimeField(verbose_name="Дата публикации комментария", auto_now_add=True)
+    review = models.ForeignKey(to=Review, on_delete=models.CASCADE, related_name="comments")
