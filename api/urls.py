@@ -1,4 +1,5 @@
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedDefaultRouter
 
@@ -37,4 +38,14 @@ urlpatterns = [
     path("v1/", include(arg=router.urls)),
     path("v1/", include(arg=titles_router.urls)),
     path("v1/", include(arg=reviews_router.urls)),
+]
+
+urlpatterns += [
+    path(route="v1/schema/", view=SpectacularAPIView.as_view(), name="schema"),
+    path(
+        route="v1/swagger-ui/",
+        view=SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(route="v1/redoc/", view=SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]

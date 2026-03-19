@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models.manager import BaseManager
@@ -9,29 +8,20 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from reviews.models import Category, Comment, Genre, Review, Title
-from users import models
+from users.models import User
 
+from . import serializers
+from .filters import TitleFilter
 from .permissions import CustomIsAdminUser, CustomIsAdminUserOrReadOnly, IsStaffOrOwnerOrReadOnly
-from .serializers import (
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    ReviewSerializer,
-    SignupSerializer,
-    TitleSerializer,
-    TokenSerializer,
-    UserMeSerializer,
-    UserSerializer,
-)
-
-User = get_user_model()
+from .schemas import auth, categories, comments, genres, reviews, titles, users
 
 
 class SignupAPIView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
+    @auth.signup_schema
     def post(self, request: Request) -> Response:
-        serializer = SignupSerializer(data=request.data)
+        serializer = serializers.SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user, _ = User.objects.get_or_create(**serializer.validated_data)
@@ -51,8 +41,9 @@ class SignupAPIView(views.APIView):
 class TokenAPIView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
+    @auth.token_schema
     def post(self, request: Request) -> Response:
-        serializer = TokenSerializer(data=request.data)
+        serializer = serializers.TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         token: dict[str, str] = serializer.save()
@@ -60,6 +51,7 @@ class TokenAPIView(views.APIView):
         return Response(data=token, status=status.HTTP_200_OK)
 
 
+@categories.category_schema
 class CategoryViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -67,13 +59,14 @@ class CategoryViewSet(
     viewsets.GenericViewSet,
 ):
     queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    serializer_class = serializers.CategorySerializer
     lookup_field = "slug"
     permission_classes = (CustomIsAdminUserOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ("name",)
 
 
+@genres.genre_schema
 class GenreViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -81,47 +74,50 @@ class GenreViewSet(
     viewsets.GenericViewSet,
 ):
     queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
+    serializer_class = serializers.GenreSerializer
     lookup_field = "slug"
     permission_classes = (CustomIsAdminUserOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ("name",)
 
 
+@titles.title_schema
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+    serializer_class = serializers.TitleSerializer
     permission_classes = (CustomIsAdminUserOrReadOnly,)
     filter_backends = (backends.DjangoFilterBackend,)
-    filterset_fields = ("category__slug", "genre__slug", "name", "year")
-    http_method_names = ("get", "post", "patch", "delete", "head", "options")
+    filterset_class = TitleFilter
+    http_method_names = ("get", "post", "patch", "delete")
 
 
+@reviews.review_schema
 class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
+    serializer_class = serializers.ReviewSerializer
     permission_classes = (IsStaffOrOwnerOrReadOnly,)
-    http_method_names = ("get", "post", "patch", "delete", "head", "options")
+    http_method_names = ("get", "post", "patch", "delete")
 
     def get_queryset(self) -> BaseManager[Review]:
         return Review.objects.filter(title=self.kwargs["title_pk"])
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context["title_id"] = self.kwargs["title_pk"]
+        context["title"] = self.kwargs["title_pk"]
         return context
 
     def perform_create(self, serializer) -> None:
-        title = get_object_or_404(Title, id=self.kwargs["title_pk"])
+        title = get_object_or_404(klass=Title, id=self.kwargs["title_pk"])
         serializer.save(
             author=self.request.user,
             title=title,
         )
 
 
+@comments.comment_schema
 class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
+    serializer_class = serializers.CommentSerializer
     permission_classes = (IsStaffOrOwnerOrReadOnly,)
-    http_method_names = ("get", "post", "patch", "delete", "head", "options")
+    http_method_names = ("get", "post", "patch", "delete")
 
     def get_queryset(self) -> BaseManager[Comment]:
         return Comment.objects.filter(review=self.kwargs["review_pk"])
@@ -134,20 +130,23 @@ class CommentViewSet(viewsets.ModelViewSet):
         )
 
 
+@users.user_schema
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
     lookup_field = "username"
     permission_classes = (CustomIsAdminUser,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ("username",)
-    http_method_names = ("get", "post", "patch", "delete", "head", "options")
+    http_method_names = ("get", "post", "patch", "delete")
 
 
+@users.userme_schema
 class UserAPIView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserMeSerializer
+    serializer_class = serializers.UserMeSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    http_method_names = ("get", "patch")
 
-    def get_object(self) -> models.User:
+    def get_object(self) -> User:
         return self.request.user

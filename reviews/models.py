@@ -1,7 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 
-User = get_user_model()
+from users.models import User
 
 
 class Category(models.Model):
@@ -25,15 +24,23 @@ class Title(models.Model):
 
 
 class Review(models.Model):
+    title = models.ForeignKey(to=Title, on_delete=models.CASCADE, related_name="reviews")
     text = models.TextField(verbose_name="Текст отзыва")
     author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="reviews")
     score = models.PositiveSmallIntegerField(verbose_name="Оценка")
     pub_date = models.DateTimeField(verbose_name="Дата публикации отзыва", auto_now_add=True)
-    title = models.ForeignKey(to=Title, on_delete=models.CASCADE, related_name="reviews")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("title", "author"),
+                name="unique_review_per_user_per_title",
+            )
+        ]
 
 
 class Comment(models.Model):
+    review = models.ForeignKey(to=Review, on_delete=models.CASCADE, related_name="comments")
     text = models.TextField(verbose_name="Текст комментария")
     author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="comments")
     pub_date = models.DateTimeField(verbose_name="Дата публикации комментария", auto_now_add=True)
-    review = models.ForeignKey(to=Review, on_delete=models.CASCADE, related_name="comments")

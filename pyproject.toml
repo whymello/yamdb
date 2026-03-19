@@ -1,6 +1,6 @@
 [project]
 name = "yamdb-api"
-version = "0.4.0"
+version = "1.0.0"
 description = "Веб ресурс для сбора отзывов пользователей на произведения"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -10,6 +10,7 @@ dependencies = [
     "djangorestframework>=3.16.1",
     "djangorestframework-simplejwt>=5.5.1",
     "drf-nested-routers>=0.95.0",
+    "drf-spectacular>=0.29.0",
     "python-dotenv>=1.2.1",
 ]
 
@@ -25,9 +26,6 @@ exclude = [
   "__pypackages__", "_build", "buck-out", "build", "dist", "node_modules", "site-packages", "venv", "migrations"
 ]
 
-# [tool.ruff.isort]
-# known-first-party = ["yamdb_api"]
-
 [tool.ruff.lint]
 select = [
   "E", "W",  # * pycodestyle
@@ -42,12 +40,8 @@ select = [
   "PD",  # * pandas-vet
   "N",  # * pep8-naming
   "DOC",  # * pydoclint
-  "D",  # * pydocstyle
 ]
-ignore = [
-  "D212",  # * multi-line-summary-first-line
-  "D1",  # * undocumented-public-...
-]
+ignore = []
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]

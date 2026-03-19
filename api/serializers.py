@@ -1,15 +1,12 @@
 from datetime import date
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
-from rest_framework import serializers, status
+from rest_framework import exceptions, serializers, status
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Comment, Genre, Review, Title
-from users import models
-
-User = get_user_model()
+from users.models import User
 
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -63,7 +60,7 @@ class TokenSerializer(serializers.Serializer):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist as exc:
-            raise serializers.ValidationError(
+            raise exceptions.NotFound(
                 detail={"username": "Пользователь с таким именем не найден."},
                 code=status.HTTP_404_NOT_FOUND,
             ) from exc
@@ -78,7 +75,7 @@ class TokenSerializer(serializers.Serializer):
 
         return attrs
 
-    def create(self, validated_data: dict[str, str | models.User]) -> dict[str, str]:
+    def create(self, validated_data: dict[str, str | User]) -> dict[str, str]:
         user = validated_data.pop("user")
         token = AccessToken.for_user(user=user)
 
@@ -98,15 +95,11 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField(read_only=True)
-    genre = serializers.SlugRelatedField(
-        many=True, slug_field="slug", queryset=Genre.objects.all(), write_only=True
+    rating = serializers.SerializerMethodField(
+        read_only=True, label="Рейтинг на основе отзывов, если отзывов нет — `None`"
     )
-    category = serializers.SlugRelatedField(
-        slug_field="slug", queryset=Category.objects.all(), write_only=True
-    )
-    genre_details = GenreSerializer(source="genre", many=True, read_only=True)
-    category_details = CategorySerializer(source="category", read_only=True)
+    genre = serializers.SlugRelatedField(many=True, slug_field="slug", queryset=Genre.objects.all())
+    category = serializers.SlugRelatedField(slug_field="slug", queryset=Category.objects.all())
 
     class Meta:
         model = Title
@@ -117,18 +110,20 @@ class TitleSerializer(serializers.ModelSerializer):
             "rating",
             "description",
             "genre",
-            "genre_details",
-            "category_details",
             "category",
         )
         read_only_fields = ("id",)
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance=instance)
+        representation["genre"] = GenreSerializer(instance.genre.all(), many=True).data
+        representation["category"] = CategorySerializer(instance.category).data
+        return representation
+
     def get_rating(self, obj: Title) -> None | int:
         reviews = obj.reviews.all()
         avg_score = reviews.aggregate(Avg("score"))["score__avg"]
-        if avg_score is None:
-            return avg_score
-        return int(avg_score)
+        return None if avg_score is None else int(avg_score)
 
     def validate_year(self, value: int) -> int:
         if value > date.today().year:
@@ -160,9 +155,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs: dict[str, str | int]) -> dict[str, str | int]:
         author = self.context["request"].user
-        title_id = self.context["title_id"]
+        title = self.context["title"]
 
-        if self.instance is None and Review.objects.filter(author=author, title=title_id).exists():
+        if self.instance is None and Review.objects.filter(author=author, title=title).exists():
             raise serializers.ValidationError(
                 detail="Вы уже оставляли отзыв на это произведение.",
                 code=status.HTTP_400_BAD_REQUEST,

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "django_filters",
+    "drf_spectacular",
     "users.apps.UsersConfig",
     "reviews.apps.ReviewsConfig",
     "api.apps.ApiConfig",
@@ -149,9 +150,97 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "YaMDb API",
+    "DESCRIPTION": "Документация к API проекта YaMDb",
+    "VERSION": "v1",
+    "CONTACT": {
+        "email": "admin@yamdb.ru",
+    },
+    "LICENSE": {
+        "name": "MIT License",
+    },
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "TAGS": [
+        {
+            "name": "Описание",
+            "description": (
+                "Проект <b>YaMDb</b> собирает отзывы пользователей на различные произведения."
+            ),
+        },
+        {
+            "name": "Алгоритм регистрации пользователей",
+            "description": (
+                "<ol><li>Пользователь отправляет POST-запрос на добавление нового пользователя с "
+                "параметрами <code>email</code> и <code>username</code> на эндпоинт "
+                "<code>/api/v1/auth/signup/</code>.</li>"
+                "<li><b>YaMDB</b> отправляет письмо с кодом подтверждения (<code>confirmation_code"
+                "</code>) на адрес <code>email</code>.</li>"
+                "<li>Пользователь отправляет POST-запрос с параметрами <code>username</code> и "
+                "<code>confirmation_code</code> на эндпоинт <code>/api/v1/auth/token/</code>, в "
+                "ответе на запрос ему приходит <code>token</code> (JWT-токен).</li>"
+                "<li>При желании пользователь отправляет PATCH-запрос на эндпоинт "
+                "<code>/api/v1/users/me/</code> и заполняет поля в своём профайле (описание полей "
+                "— в документации).</li></ol>"
+            ),
+        },
+        {
+            "name": "Пользовательские роли",
+            "description": (
+                "<ul><li><b>Аноним</b> — может просматривать описания произведений, читать отзывы "
+                "и комментарии.</li>"
+                "<li><b>Аутентифицированный пользователь</b> (<code>user</code>) — может, как и "
+                "<b>Аноним</b>, читать всё, дополнительно он может публиковать отзывы и ставить "
+                "оценку произведениям (фильмам/книгам/песенкам), может комментировать чужие "
+                "отзывы; может редактировать и удалять <b>свои</b> отзывы и комментарии. Эта роль "
+                "присваивается по умолчанию каждому новому пользователю.</li>"
+                "<li><b>Модератор</b> (<code>moderator</code>) — те же права, что и у "
+                "<b>Аутентифицированного пользователя</b> плюс право удалять <b>любые</b> отзывы и "
+                "комментарии.</li>"
+                "<li><b>Администратор</b> (<code>admin</code>) — полные права на управление всем "
+                "контентом проекта. Может создавать и удалять произведения, категории и жанры. "
+                "Может назначать роли пользователям.</li>"
+                "<li><b>Суперюзер Django</b> — обладет правами администратора (<code>admin</code>)"
+                "</li></ul>"
+            ),
+        },
+        {
+            "name": "AUTH",
+            "description": "Регистрация пользователей и выдача токенов",
+        },
+        {
+            "name": "CATEGORIES",
+            "description": "Категории (типы) произведений",
+        },
+        {
+            "name": "GENRES",
+            "description": "Категории жанров",
+        },
+        {
+            "name": "TITLES",
+            "description": (
+                "Произведения, к которым пишут отзывы (определённый фильм, книга или песенка)."
+            ),
+        },
+        {
+            "name": "REVIEWS",
+            "description": "Отзывы",
+        },
+        {
+            "name": "COMMENTS",
+            "description": "Комментарии к отзывам",
+        },
+        {
+            "name": "USERS",
+            "description": "Пользователи",
+        },
+    ],
 }
