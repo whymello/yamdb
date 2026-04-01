@@ -180,6 +180,84 @@ python manage.py importcsv  # (опционально, для заполнени
 python manage.py runserver
 ```
 
+## 📦 Запуск через Docker
+
+Проект поддерживает запуск в контейнерах с использованием Docker и Docker Compose.
+
+- `web` — Django-приложение (Gunicorn)
+- `db` — PostgreSQL
+- `nginx` — reverse proxy + раздача статики и медиа
+
+### 📋 Требования
+
+- Docker
+- Docker Compose
+
+### 🚀 Запуск проекта
+
+Собрать и запустить контейнеры:
+
+```bash
+docker compose up -d --build
+```
+
+### 📍 Доступ к приложению
+
+После запуска приложение доступно по адресу: `http://localhost/api/v1/`
+
+### 📖 API документация
+
+- Swagger UI: `http://localhost/api/v1/swagger-ui/`
+- ReDoc: `http://localhost/api/v1/redoc/`
+
+
+### 🗄 База данных
+
+- Используется PostgreSQL
+- Данные сохраняются в volume postgres_data
+- Настройки задаются через `.env`
+
+### 📂 Статика и медиа
+
+- Django собирает файлы в volumes:
+  - static_value
+  - media_value
+- Nginx раздаёт их напрямую:
+  - /static/
+  - /media/
+
+### ⚙️ Полезные команды
+
+Остановить контейнеры:
+
+```bash
+docker compose down
+```
+
+Просмотр логов:
+
+```bash
+docker compose logs -f
+```
+
+Применить миграции:
+
+```bash
+docker compose exec web python manage.py migrate
+```
+
+Создать суперпользователя:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+Импортировать данные из CSV:
+
+```bash
+docker compose exec web python manage.py importcsv
+```
+
 ## 🔄 Версионирование
 
 Текущая версия: **1.0.0**

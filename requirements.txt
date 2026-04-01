@@ -28,12 +28,18 @@ drf-nested-routers==0.95.0
     # via yamdb-api
 drf-spectacular==0.29.0
     # via yamdb-api
+gunicorn==25.3.0
+    # via yamdb-api
 inflection==0.5.1
     # via drf-spectacular
 jsonschema==4.26.0
     # via drf-spectacular
 jsonschema-specifications==2025.9.1
     # via jsonschema
+packaging==26.0
+    # via gunicorn
+psycopg2-binary==2.9.11
+    # via yamdb-api
 pyjwt==2.11.0
     # via djangorestframework-simplejwt
 python-dotenv==1.2.1
